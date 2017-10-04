@@ -204,10 +204,6 @@ int main() {
   }
 
 
-
-
-
-
   h.onMessage([&map_waypoints_x,&map_waypoints_y,&map_waypoints_s,
                 &map_waypoints_dx,&map_waypoints_dy](uWS::WebSocket<uWS::SERVER> ws, 
                 char *data, size_t length, uWS::OpCode opCode) 
@@ -249,21 +245,7 @@ int main() {
 
             /////////////////////////////////////////////////////
 
-            // // TODO: define a path made up of (x,y) points that the car will visit sequentially every .02 seconds
-            // // go in strainght line
-            // double dist_inc = 0.4;
-            // for (int i=0; i<50; i++){
-            //  double next_s = car_s+(i+1)*dist_inc;
-            //  double next_d = 6;
-
-            //  vector<double> xy = getXY(next_s, next_d, map_waypoints_s, map_waypoints_x, map_waypoints_y);
-
-            // vector<double> next_x_vals;
-            // vector<double> next_y_vals;
-
-            //  next_x_vals.push_back(xy[0]);
-            //  next_y_vals.push_back(xy[1]);
-            // }
+            // TODO: define a path made up of (x,y) points that the car will visit sequentially every .02 seconds
 
             // for previous list of points
             int prev_size = previous_path_x.size();
@@ -292,9 +274,6 @@ int main() {
             {
               car_s = end_path_s;
             }
-
-            // find out if left_is_free or right_is_free
-            
 
             // find ref_v to use: check through the data (cars) from sensor fussion output
             for (int i = 0; i < sensor_fusion.size(); i++)
@@ -375,49 +354,6 @@ int main() {
                       lane = 1;
                   }
 
-                  // check which lane the car can go into:
-                  // if ((lane > 0)) 
-                  // {
-                  //   lane = 0;
-                  // } else if (lane==0)
-                  // {
-                  //   lane=1;
-                  // }
-
-                  // if ((lane==0) && right_is_free)
-                  // {
-                  //   lane = 1;
-                  // } else
-                  // if ((lane > 0) && left_is_free)
-                  // {
-                  //   if (left_is_free)
-                  //   {
-                  //     lane -= 1;
-                  //   } else if (right_is_free)
-                  //   {
-                  //     lane += 1;
-                  //   }
-                  //   // lane -= 1;
-                  // } 
-                  // else if (right_is_free) //(lane > 0) &&
-                  // {
-                  //   lane += 1;
-                  // } 
-                  // else if ((lane==1) && (left_is_free && right_is_free))
-                  // {
-                  //   cout << "spaces >> left: " << space_on_left << 
-                  //           " right: " << space_on_right << endl;
-                  //   if (space_on_right>space_on_left)
-                  //   {
-                  //     lane = 2;
-                  //   }else{
-                  //     lane = 0;
-                  //   }
-                  // }
-                  // else if ((lane==0) && right_is_free)
-                  // {
-                  //   lane=1;
-                  // }
                 cout << "changing to lane: " << lane << endl;
                 }
               }
@@ -438,7 +374,6 @@ int main() {
             {
               ref_vel += 0.224;
             }
-
 
 						
             // create a list of widely spaced (x,y) waypoints, evenly spaced at 30m
