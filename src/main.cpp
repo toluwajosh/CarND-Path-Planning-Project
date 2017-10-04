@@ -266,7 +266,9 @@ int main() {
             // }
 
             // for previous list of points
-            int prev_size = previous_path_x.size(); 
+            int prev_size = previous_path_x.size();
+
+            bool car_ahead = false;
 
 
             double safety_space = 30; // set a safety_space
@@ -274,8 +276,8 @@ int main() {
             bool left_is_free = true;
             bool right_is_free = true;
 
-            // double space_on_left = 10000.0;
-            // double space_on_right = 10000.0;
+            double space_on_left = 10000.0;
+            double space_on_right = 10000.0;
 
             if (lane==0)
             {
@@ -316,6 +318,7 @@ int main() {
               // if observed car is in my lane:
               if ((d<2+4*lane+2) && d > (2+4*lane-2))
               { 
+                car_ahead = true;
                 
                 // check s values greater than mine and s gap
                 if ((check_car_s > car_s) && ((check_car_s-car_s)<safety_space))
@@ -327,13 +330,49 @@ int main() {
 
                   too_close = true;
 
+                  // the next conditions should be for the nearest car 
+                  // in the lane the ego car is considering to move into
+                  // find the nearest car on a lane beside the present lane
+                  // if the car is projected to be too close by the time of lane change
+                  // consider that lane not free
+
                   if (lane_obsvd == (lane-1)){ // if observed car is on the left side
+                    if (space < space_on_left) {space_on_left = space;}
                     left_is_free = false;
-                    // if (space <left_clear) {left_clear = space;}
                   }
                   if (lane_obsvd == (lane+1)){ // if observed car is on the right side
+                    if (space < space_on_right) {space_on_right = space;}
                     right_is_free = false;
-                    // if (space<right_clear){right_clear = space;}
+                  }
+
+                  cout << "\nleft_is_free: " << left_is_free
+                        << " right_is_free: " << right_is_free << endl;
+
+                  if ((lane==0) && right_is_free)
+                  {
+                      lane = 1;
+                  }
+                  else if (lane==1)
+                  {
+                    if (left_is_free && right_is_free)
+                    {
+                      cout << "spaces >> left: " << space_on_left << 
+                              " right: " << space_on_right << endl;
+                      if (space_on_right > space_on_left)
+                      {
+                        lane = 2;
+                      } else {
+                        lane = 0;
+                      }
+                    } else if (left_is_free) { 
+                      lane = 0;
+                    } else {
+                      lane = 2;
+                    }
+                  }
+                  else if ((lane==2) && left_is_free)
+                  {
+                      lane = 1;
                   }
 
                   // check which lane the car can go into:
@@ -344,20 +383,52 @@ int main() {
                   // {
                   //   lane=1;
                   // }
-                  if ((lane > 0) && left_is_free)
-                  {
-                    lane = 0;
-                  } else if ((lane > 0) && right_is_free)
-                  {
-                    lane=2;
-                  } else if (lane==0)
-                  {
-                    lane=1;
-                  }
+
+                  // if ((lane==0) && right_is_free)
+                  // {
+                  //   lane = 1;
+                  // } else
+                  // if ((lane > 0) && left_is_free)
+                  // {
+                  //   if (left_is_free)
+                  //   {
+                  //     lane -= 1;
+                  //   } else if (right_is_free)
+                  //   {
+                  //     lane += 1;
+                  //   }
+                  //   // lane -= 1;
+                  // } 
+                  // else if (right_is_free) //(lane > 0) &&
+                  // {
+                  //   lane += 1;
+                  // } 
+                  // else if ((lane==1) && (left_is_free && right_is_free))
+                  // {
+                  //   cout << "spaces >> left: " << space_on_left << 
+                  //           " right: " << space_on_right << endl;
+                  //   if (space_on_right>space_on_left)
+                  //   {
+                  //     lane = 2;
+                  //   }else{
+                  //     lane = 0;
+                  //   }
+                  // }
+                  // else if ((lane==0) && right_is_free)
+                  // {
+                  //   lane=1;
+                  // }
+                cout << "changing to lane: " << lane << endl;
                 }
               }
             }
 
+            if (lane>2)
+            {
+              lane = 2;
+            }
+
+            // when the ego car is too close, it should maintain speed of the car in from of it
             // velocity control
             if (too_close)
             {
