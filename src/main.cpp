@@ -345,7 +345,7 @@ int main() {
                       }
                     } else if (left_is_free) { 
                       lane = 0;
-                    } else {
+                    } else if(right_is_free) {
                       lane = 2;
                     }
                   }
