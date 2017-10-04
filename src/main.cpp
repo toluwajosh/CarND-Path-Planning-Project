@@ -208,8 +208,9 @@ int main() {
 
 
 
-  h.onMessage([&map_waypoints_x,&map_waypoints_y,&map_waypoints_s,&map_waypoints_dx,&map_waypoints_dy](uWS::WebSocket<uWS::SERVER> ws, char *data, size_t length,
-                     uWS::OpCode opCode) 
+  h.onMessage([&map_waypoints_x,&map_waypoints_y,&map_waypoints_s,
+                &map_waypoints_dx,&map_waypoints_dy](uWS::WebSocket<uWS::SERVER> ws, 
+                char *data, size_t length, uWS::OpCode opCode) 
   {
     // "42" at the start of the message means there's a websocket message event.
     // The 4 signifies a websocket message
@@ -268,44 +269,96 @@ int main() {
             int prev_size = previous_path_x.size(); 
 
 
+            double safety_space = 30; // set a safety_space
+            bool too_close = false;
+            bool left_is_free = true;
+            bool right_is_free = true;
+
+            // double space_on_left = 10000.0;
+            // double space_on_right = 10000.0;
+
+            if (lane==0)
+            {
+              left_is_free = false;
+            }
+            if (lane==2)
+            {
+              right_is_free = false;
+            }
+
             if (prev_size > 0)
             {
               car_s = end_path_s;
             }
+
+            // find out if left_is_free or right_is_free
             
-            bool too_close = false;
 
             // find ref_v to use: check through the data (cars) from sensor fussion output
             for (int i = 0; i < sensor_fusion.size(); i++)
             {
               // find if a car is in my lane
               float d = sensor_fusion[i][6];
+
+							// observe lane of car
+              int lane_obsvd = abs(d/4);
+
+              // check the velocity of the car in my lane
+              double vx = sensor_fusion[i][3];
+              double vy = sensor_fusion[i][4];
+              double check_speed = sqrt(vx*vx+vy*vy);
+              double check_car_s = sensor_fusion[i][5]; // the s coordinate of the car
+              // project where the car might be in the future
+              check_car_s += ((double)prev_size*0.02*check_speed);
+              double space = check_car_s - end_path_s;
+
+              
+              // if observed car is in my lane:
               if ((d<2+4*lane+2) && d > (2+4*lane-2))
               { 
-                // check the velocity of the car in my lane
-                double vx = sensor_fusion[i][3];
-                double vy = sensor_fusion[i][4];
-                double check_speed = sqrt(vx*vx+vy*vy);
-                double check_car_s = sensor_fusion[i][5]; // the s coordinate of the car
-
-                // project where the car might be in the future
-                check_car_s += ((double)prev_size*0.02*check_speed);
+                
                 // check s values greater than mine and s gap
-                if ((check_car_s > car_s) && ((check_car_s-car_s)<30))
+                if ((check_car_s > car_s) && ((check_car_s-car_s)<safety_space))
                 {
                   
                   // Do some logic here, lower reference velocity so we dont crash into the car infront of us,
-                  // could also flad to try to change lanes.
+                  // could also flag to try to change lanes.
                   // ref_vel = 29.5; //mph
+
                   too_close = true;
-                  if (lane > 0)
+
+                  if (lane_obsvd == (lane-1)){ // if observed car is on the left side
+                    left_is_free = false;
+                    // if (space <left_clear) {left_clear = space;}
+                  }
+                  if (lane_obsvd == (lane+1)){ // if observed car is on the right side
+                    right_is_free = false;
+                    // if (space<right_clear){right_clear = space;}
+                  }
+
+                  // check which lane the car can go into:
+                  // if ((lane > 0)) 
+                  // {
+                  //   lane = 0;
+                  // } else if (lane==0)
+                  // {
+                  //   lane=1;
+                  // }
+                  if ((lane > 0) && left_is_free)
                   {
                     lane = 0;
+                  } else if ((lane > 0) && right_is_free)
+                  {
+                    lane=2;
+                  } else if (lane==0)
+                  {
+                    lane=1;
                   }
                 }
               }
             }
 
+            // velocity control
             if (too_close)
             {
               ref_vel -= 0.224;
