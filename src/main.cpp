@@ -9,6 +9,7 @@
 #include "Eigen-3.3/Eigen/QR"
 #include "json.hpp"
 #include "spline.h"
+#include "Vehicle.h"
 
 using namespace std;
 
@@ -169,6 +170,10 @@ double ref_vel = 0.0; //mph
 int main() {
   uWS::Hub h;
 
+  // create vehicle class
+  Vehicle ego_vehicle;
+  ego_vehicle.start(1, 49.5);
+
   // Load up map values for waypoint's x,y,s and d normalized normal vectors
   vector<double> map_waypoints_x;
   vector<double> map_waypoints_y;
@@ -204,7 +209,7 @@ int main() {
   }
 
 
-  h.onMessage([&map_waypoints_x,&map_waypoints_y,&map_waypoints_s,
+  h.onMessage([&map_waypoints_x,&map_waypoints_y,&map_waypoints_s, &ego_vehicle,
                 &map_waypoints_dx,&map_waypoints_dy](uWS::WebSocket<uWS::SERVER> ws, 
                 char *data, size_t length, uWS::OpCode opCode) 
   {
@@ -250,7 +255,16 @@ int main() {
             // for previous list of points
             int prev_size = previous_path_x.size();
 
+
+
+            // preperties of present run ///
+            double speed_limit = 49.5;
+            double keep_lane_speed = 49.5;
             bool car_ahead = false;
+            double other_car_dist = 10000000.0;
+            double other_car_d = -1;
+            int other_car_lane = -1;
+            int other_car_id = -1;
 
 
             double safety_space = 30; // set a safety_space
@@ -275,7 +289,13 @@ int main() {
               car_s = end_path_s;
             }
 
-            // find ref_v to use: check through the data (cars) from sensor fussion output
+
+            /// the function
+            // lane = ego_vehicle.next_lane(sensor_fusion, lane, car_s, end_path_s, prev_size);
+
+            // cout << "car s: " << car_s << endl;
+            ///////////////////////////////////////////////////////////
+            // check through the data (cars) from sensor fussion output
             for (int i = 0; i < sensor_fusion.size(); i++)
             {
               // find if a car is in my lane
@@ -289,15 +309,26 @@ int main() {
               double vy = sensor_fusion[i][4];
               double check_speed = sqrt(vx*vx+vy*vy);
               double check_car_s = sensor_fusion[i][5]; // the s coordinate of the car
+              double check_car_d = sensor_fusion[i][6];
               // project where the car might be in the future
               check_car_s += ((double)prev_size*0.02*check_speed);
               double space = check_car_s - end_path_s;
+
+              // want to track the nearest car to the ego car
+              double car_dist = fabs(check_car_s - car_s);
+              if (car_dist < other_car_dist) {
+                other_car_dist = car_dist;
+                other_car_d = check_car_d;
+                other_car_lane = other_car_d/4;
+                other_car_id = i;
+              }
 
               
               // if observed car is in my lane:
               if ((d<2+4*lane+2) && d > (2+4*lane-2))
               { 
-                car_ahead = true;
+                // speed of the car in my lane
+                keep_lane_speed = check_speed;
                 
                 // check s values greater than mine and s gap
                 if ((check_car_s > car_s) && ((check_car_s-car_s)<safety_space))
@@ -306,8 +337,8 @@ int main() {
                   // Do some logic here, lower reference velocity so we dont crash into the car infront of us,
                   // could also flag to try to change lanes.
                   // ref_vel = 29.5; //mph
-
                   too_close = true;
+
 
                   // the next conditions should be for the nearest car 
                   // in the lane the ego car is considering to move into
@@ -355,27 +386,49 @@ int main() {
                   }
 
                 cout << "changing to lane: " << lane << endl;
+                if (other_car_id != -1){
+                  cout << "other car: " << other_car_dist << " ,lane: " << other_car_lane << endl;
+                }
+
                 }
               }
-            }
+            } 
 
-            if (lane>2)
-            {
-              lane = 2;
-            }
+            // if (lane>2)
+            // {
+            //   lane = 2;
+            // }
 
-            // when the ego car is too close, it should maintain speed of the car in from of it
+            // lane = 1; // for debug only
+            // end of checking cars around ego-car
+            ///////////////////////////////////////////////////////////////
+
+            //////////////////////////////////////////////////////////////
             // velocity control
+            // when the ego car is too close, it should maintain speed of the car in from of it
+            // if (car_ahead)
+            // {
+            //   speed_limit = keep_lane_speed;
+            //   cout << "car ahead, changing speed limit: " << speed_limit << endl;
+            // } else {
+            //   speed_limit = 49.5;
+            // }
+
+            // if (ego_vehicle.too_close)
             if (too_close)
             {
               ref_vel -= 0.224;
+              // cout << "too close: " << keep_lane_speed << endl;
             }
             else if(ref_vel < 49.5)
             {
               ref_vel += 0.224;
             }
 
-						
+
+						/////////////////////////////////////////////////////////////////////////////////////////
+            // Trajectory Planning
+
             // create a list of widely spaced (x,y) waypoints, evenly spaced at 30m
             // Later we will interpolate these waypoints and fill it in with more points that control the speed
             vector<double> ptsx;
@@ -400,7 +453,7 @@ int main() {
               ptsy.push_back(prev_car_y);
               ptsy.push_back(car_y);
             }
-            // else use the precious path's end point as starting reference
+            // else use the previous path's end point as starting reference
             else
             {
               // redefine reference state as previous path end point
