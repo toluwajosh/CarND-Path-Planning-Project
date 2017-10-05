@@ -15,9 +15,28 @@ void Vehicle::start(int lane, double speed_limit){
 
 int Vehicle::next_lane(vector<vector<double>> sensor_fusion, int current_lane, double car_s, double end_path_s, int prev_size){
   
-  // initialize new lane
-  int lane = current_lane;
+  // update lane
+  lane = current_lane;
 
+
+  // other car properties
+  double other_car_dist = 10000000.0;
+  double other_car_d = -1;
+  int other_car_lane = -1;
+  int other_car_id = -1;
+
+  // current run properties
+  double keep_lane_speed = 49.5;
+  bool car_ahead = false;
+
+
+  too_close = false;
+  // left_is_free = true;
+  // right_is_free = true;
+
+  space_on_left = 10000.0;
+  space_on_right = 10000.0;
+  
   if (lane==0)
   {
     left_is_free = false;

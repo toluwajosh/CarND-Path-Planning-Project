@@ -13,15 +13,8 @@ class Vehicle
   int patience  = 6;
   double speed_limit = 49.5;
 
-  double keep_lane_speed = 49.5;
-  bool car_ahead = false;
-  double other_car_dist = 10000000.0;
-  double other_car_d = -1;
-  int other_car_lane = -1;
-  int other_car_id = -1;
 
-
-  double safety_space = 50; // set a safety_space
+  double safety_space = 30; // set a safety_space
   
   bool left_is_free = true;
   bool right_is_free = true;

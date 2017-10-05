@@ -245,44 +245,11 @@ int main() {
           	double end_path_s = j[1]["end_path_s"];
           	double end_path_d = j[1]["end_path_d"];
 
-          	// Sensor Fusion Data, a list of all other cars on the same side of the road.
-          	auto sensor_fusion = j[1]["sensor_fusion"];
-
-            /////////////////////////////////////////////////////
-
-            // TODO: define a path made up of (x,y) points that the car will visit sequentially every .02 seconds
+            // Sensor Fusion Data, a list of all other cars on the same side of the road.
+            auto sensor_fusion = j[1]["sensor_fusion"];
 
             // for previous list of points
             int prev_size = previous_path_x.size();
-
-
-
-            // preperties of present run ///
-            double speed_limit = 49.5;
-            double keep_lane_speed = 49.5;
-            bool car_ahead = false;
-            double other_car_dist = 10000000.0;
-            double other_car_d = -1;
-            int other_car_lane = -1;
-            int other_car_id = -1;
-
-
-            double safety_space = 30; // set a safety_space
-            bool too_close = false;
-            bool left_is_free = true;
-            bool right_is_free = true;
-
-            double space_on_left = 10000.0;
-            double space_on_right = 10000.0;
-
-            if (lane==0)
-            {
-              left_is_free = false;
-            }
-            if (lane==2)
-            {
-              right_is_free = false;
-            }
 
             if (prev_size > 0)
             {
@@ -290,118 +257,150 @@ int main() {
             }
 
 
-            /// the function
-            // lane = ego_vehicle.next_lane(sensor_fusion, lane, car_s, end_path_s, prev_size);
+            // the function
+            lane = ego_vehicle.next_lane(sensor_fusion, lane, car_s, end_path_s, prev_size);
 
-            // cout << "car s: " << car_s << endl;
-            ///////////////////////////////////////////////////////////
-            // check through the data (cars) from sensor fussion output
-            for (int i = 0; i < sensor_fusion.size(); i++)
-            {
-              // find if a car is in my lane
-              float d = sensor_fusion[i][6];
+       //      /////////////////////////////////////////////////////
 
-							// observe lane of car
-              int lane_obsvd = abs(d/4);
+       //      // TODO: define a path made up of (x,y) points that the car will visit sequentially every .02 seconds
 
-              // check the velocity of the car in my lane
-              double vx = sensor_fusion[i][3];
-              double vy = sensor_fusion[i][4];
-              double check_speed = sqrt(vx*vx+vy*vy);
-              double check_car_s = sensor_fusion[i][5]; // the s coordinate of the car
-              double check_car_d = sensor_fusion[i][6];
-              // project where the car might be in the future
-              check_car_s += ((double)prev_size*0.02*check_speed);
-              double space = check_car_s - end_path_s;
+       //      // preperties of present run ///
+       //      double speed_limit = 49.5;
+       //      double keep_lane_speed = 49.5;
+       //      bool car_ahead = false;
+       //      double other_car_dist = 10000000.0;
+       //      double other_car_d = -1;
+       //      int other_car_lane = -1;
+       //      int other_car_id = -1;
 
-              // want to track the nearest car to the ego car
-              double car_dist = fabs(check_car_s - car_s);
-              if (car_dist < other_car_dist) {
-                other_car_dist = car_dist;
-                other_car_d = check_car_d;
-                other_car_lane = other_car_d/4;
-                other_car_id = i;
-              }
+
+       //      double safety_space = 30; // set a safety_space
+       //      bool too_close = false;
+       //      bool left_is_free = true;
+       //      bool right_is_free = true;
+
+       //      double space_on_left = 10000.0;
+       //      double space_on_right = 10000.0;
+
+       //      if (lane==0)
+       //      {
+       //        left_is_free = false;
+       //      }
+       //      if (lane==2)
+       //      {
+       //        right_is_free = false;
+       //      }
+
+
+       //      // cout << "car s: " << car_s << endl;
+       //      ///////////////////////////////////////////////////////////
+       //      // check through the data (cars) from sensor fussion output
+       //      for (int i = 0; i < sensor_fusion.size(); i++)
+       //      {
+       //        // find if a car is in my lane
+       //        float d = sensor_fusion[i][6];
+
+							// // observe lane of car
+       //        int lane_obsvd = abs(d/4);
+
+       //        // check the velocity of the car in my lane
+       //        double vx = sensor_fusion[i][3];
+       //        double vy = sensor_fusion[i][4];
+       //        double check_speed = sqrt(vx*vx+vy*vy);
+       //        double check_car_s = sensor_fusion[i][5]; // the s coordinate of the car
+       //        double check_car_d = sensor_fusion[i][6];
+       //        // project where the car might be in the future
+       //        check_car_s += ((double)prev_size*0.02*check_speed);
+       //        double space = check_car_s - end_path_s;
+
+       //        // want to track the nearest car to the ego car
+       //        double car_dist = fabs(check_car_s - car_s);
+       //        if (car_dist < other_car_dist) {
+       //          other_car_dist = car_dist;
+       //          other_car_d = check_car_d;
+       //          other_car_lane = other_car_d/4;
+       //          other_car_id = i;
+       //        }
 
               
-              // if observed car is in my lane:
-              if ((d<2+4*lane+2) && d > (2+4*lane-2))
-              { 
-                // speed of the car in my lane
-                keep_lane_speed = check_speed;
+       //        // if observed car is in my lane:
+       //        if ((d<2+4*lane+2) && d > (2+4*lane-2))
+       //        { 
+       //          // speed of the car in my lane
+       //          keep_lane_speed = check_speed;
                 
-                // check s values greater than mine and s gap
-                if ((check_car_s > car_s) && ((check_car_s-car_s)<safety_space))
-                {
+       //          // check s values greater than mine and s gap
+       //          if ((check_car_s > car_s) && ((check_car_s-car_s)<safety_space))
+       //          {
                   
-                  // Do some logic here, lower reference velocity so we dont crash into the car infront of us,
-                  // could also flag to try to change lanes.
-                  // ref_vel = 29.5; //mph
-                  too_close = true;
+       //            // Do some logic here, lower reference velocity so we dont crash into the car infront of us,
+       //            // could also flag to try to change lanes.
+       //            // ref_vel = 29.5; //mph
+       //            too_close = true;
 
 
-                  // the next conditions should be for the nearest car 
-                  // in the lane the ego car is considering to move into
-                  // find the nearest car on a lane beside the present lane
-                  // if the car is projected to be too close by the time of lane change
-                  // consider that lane not free
+       //            // the next conditions should be for the nearest car 
+       //            // in the lane the ego car is considering to move into
+       //            // find the nearest car on a lane beside the present lane
+       //            // if the car is projected to be too close by the time of lane change
+       //            // consider that lane not free
 
-                  if (lane_obsvd == (lane-1)){ // if observed car is on the left side
-                    if (space < space_on_left) {space_on_left = space;}
-                    left_is_free = false;
-                  }
-                  if (lane_obsvd == (lane+1)){ // if observed car is on the right side
-                    if (space < space_on_right) {space_on_right = space;}
-                    right_is_free = false;
-                  }
+       //            if (lane_obsvd == (lane-1)){ // if observed car is on the left side
+       //              if (space < space_on_left) {space_on_left = space;}
+       //              left_is_free = false;
+       //            }
+       //            if (lane_obsvd == (lane+1)){ // if observed car is on the right side
+       //              if (space < space_on_right) {space_on_right = space;}
+       //              right_is_free = false;
+       //            }
 
-                  cout << "\nleft_is_free: " << left_is_free
-                        << " right_is_free: " << right_is_free << endl;
+       //            cout << "\nleft_is_free: " << left_is_free
+       //                  << " right_is_free: " << right_is_free << endl;
 
-                  if ((lane==0) && right_is_free)
-                  {
-                      lane = 1;
-                  }
-                  else if (lane==1)
-                  {
-                    if (left_is_free && right_is_free)
-                    {
-                      cout << "spaces >> left: " << space_on_left << 
-                              " right: " << space_on_right << endl;
-                      if (space_on_right > space_on_left)
-                      {
-                        lane = 2;
-                      } else {
-                        lane = 0;
-                      }
-                    } else if (left_is_free) { 
-                      lane = 0;
-                    } else if(right_is_free) {
-                      lane = 2;
-                    }
-                  }
-                  else if ((lane==2) && left_is_free)
-                  {
-                      lane = 1;
-                  }
+       //            if ((lane==0) && right_is_free)
+       //            {
+       //                lane = 1;
+       //            }
+       //            else if (lane==1)
+       //            {
+       //              if (left_is_free && right_is_free)
+       //              {
+       //                cout << "spaces >> left: " << space_on_left << 
+       //                        " right: " << space_on_right << endl;
+       //                if (space_on_right > space_on_left)
+       //                {
+       //                  lane = 2;
+       //                } else {
+       //                  lane = 0;
+       //                }
+       //              } else if (left_is_free) { 
+       //                lane = 0;
+       //              } else if(right_is_free) {
+       //                lane = 2;
+       //              }
+       //            }
+       //            else if ((lane==2) && left_is_free)
+       //            {
+       //                lane = 1;
+       //            }
 
-                cout << "changing to lane: " << lane << endl;
-                if (other_car_id != -1){
-                  cout << "other car: " << other_car_dist << " ,lane: " << other_car_lane << endl;
-                }
+       //          cout << "changing to lane: " << lane << endl;
+       //          if (other_car_id != -1){
+       //            cout << "other car: " << other_car_dist << " ,lane: " << other_car_lane << endl;
+       //          }
 
-                }
-              }
-            } 
+       //          }
+       //        }
+       //      } 
 
-            // if (lane>2)
-            // {
-            //   lane = 2;
-            // }
+       //      // if (lane>2)
+       //      // {
+       //      //   lane = 2;
+       //      // }
 
-            // lane = 1; // for debug only
-            // end of checking cars around ego-car
-            ///////////////////////////////////////////////////////////////
+       //      // lane = 1; // for debug only
+       //      // end of checking cars around ego-car
+       //      ///////////////////////////////////////////////////////////////
 
             //////////////////////////////////////////////////////////////
             // velocity control
@@ -414,8 +413,8 @@ int main() {
             //   speed_limit = 49.5;
             // }
 
-            // if (ego_vehicle.too_close)
-            if (too_close)
+            if (ego_vehicle.too_close)
+            // if (too_close)
             {
               ref_vel -= 0.224;
               // cout << "too close: " << keep_lane_speed << endl;
@@ -439,6 +438,7 @@ int main() {
             double ref_x = car_x;
             double ref_y = car_y;
             double ref_yaw = deg2rad(car_yaw);
+
 
             // if previous size is almost empty, use the car as starting reference
             if (prev_size < 2)
@@ -485,6 +485,15 @@ int main() {
             ptsy.push_back(next_wp1[1]);
             ptsy.push_back(next_wp2[1]);
 
+            // cout << "\nnext wp0x: " << next_wp0[0] << endl;
+            // cout << "next wp1x: " << next_wp1[0] << endl;
+            // cout << "next wp2x: " << next_wp2[0] << endl;
+
+            // cout << "next wp0y: " << next_wp0[1] << endl;
+            // cout << "next wp1y: " << next_wp1[1] << endl;
+            // cout << "next wp2y: " << next_wp2[1] << endl;
+
+
 
             for (int i = 0; i < ptsx.size(); i++)
             {
@@ -495,6 +504,7 @@ int main() {
               ptsx[i] = (shift_x*cos(0-ref_yaw)-shift_y*sin(0-ref_yaw));
               ptsy[i] = (shift_x*sin(0-ref_yaw)+shift_y*cos(0-ref_yaw));
             }
+
 
             // create a spline
             tk::spline s;
