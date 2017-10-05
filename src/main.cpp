@@ -267,7 +267,7 @@ int main() {
             // get new lane to go to
             lane = ego_vehicle.next_lane(sensor_fusion, lane, car_s, end_path_s, prev_size);
             
-            lane = 1;
+            // lane = 1; // for debug
 
             if (ego_vehicle.too_close)
             {
@@ -277,28 +277,12 @@ int main() {
               speed_limit = 49.5;
             }
 
-            // if (ego_vehicle.too_close)
-            // {
-            //   ref_vel -= 0.224;
-            // }
-            // else if( not ego_vehicle.car_ahead && (ref_vel < 49.5))
-            // if(ref_vel < speed_limit)
-            // {
-            //   // ref_vel += 0.224;
-            //   double vel_error = ref_vel - speed_limit;
-            //   vel_control.UpdateError(vel_error);
-            //   double new_vel = vel_control.TotalError();
-            //   cout << "\nnew velocity: " << new_vel << endl;
-            //   cout << "other car velocity: " << ego_vehicle.other_car_vel << endl;
-            //   ref_vel += new_vel;
-            // }
 
-            // ref_vel += 0.224;
             double vel_error = ref_vel - speed_limit;
             vel_control.UpdateError(vel_error);
             double new_vel = vel_control.TotalError();
-            cout << "\nnew velocity: " << new_vel << endl;
-            cout << "other car velocity: " << ego_vehicle.other_car_vel << endl;
+            // cout << "\nnew velocity: " << new_vel << endl;
+            // cout << "other car velocity: " << ego_vehicle.other_car_vel << endl;
             ref_vel += new_vel;
 
 

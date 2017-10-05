@@ -25,9 +25,6 @@ int Vehicle::next_lane(vector<vector<double>> sensor_fusion, int current_lane, d
   int other_car_lane = -1;
   int other_car_id = -1;
 
-  // current run properties
-  double keep_lane_speed = 49.5;
-  
 
   car_ahead = false;
   too_close = false;
@@ -38,6 +35,8 @@ int Vehicle::next_lane(vector<vector<double>> sensor_fusion, int current_lane, d
   space_on_left = 10000.0;
   space_on_right = 10000.0;
   
+
+  // for ego_vehicle:
   if (lane==0)
   {
     left_is_free = false;
@@ -78,18 +77,27 @@ int Vehicle::next_lane(vector<vector<double>> sensor_fusion, int current_lane, d
         other_car_vel = check_speed;
       }
 
+
       
       // if observed car is in my lane:
       if ((d<2+4*lane+2) && d > (2+4*lane-2))
       { 
-        // speed of the car in my lane
-        keep_lane_speed = check_speed;
 
+        // of an observed car is ahead
         if ((check_car_s > car_s) && ((check_car_s-car_s)<(safety_space + 30))){
           car_ahead = true;
+
+          if (lane_obsvd == (lane-1)){ // if an observed car is on the left side
+            if (space < space_on_left) {space_on_left = space;}
+            left_is_free = false;
+          }
+          if (lane_obsvd == (lane+1)){ // if an observed car is on the right side
+            if (space < space_on_right) {space_on_right = space;}
+            right_is_free = false;
+          }
         }
         
-        // check s values greater than mine and s gap
+        // if observed car is too close
         if ((check_car_s > car_s) && ((check_car_s-car_s)<safety_space))
         {
           
@@ -99,23 +107,8 @@ int Vehicle::next_lane(vector<vector<double>> sensor_fusion, int current_lane, d
           too_close = true;
 
 
-          // the next conditions should be for the nearest car 
-          // in the lane the ego car is considering to move into
-          // find the nearest car on a lane beside the present lane
-          // if the car is projected to be too close by the time of lane change
-          // consider that lane not free
-
-          if (lane_obsvd == (lane-1)){ // if observed car is on the left side
-            if (space < space_on_left) {space_on_left = space;}
-            left_is_free = false;
-          }
-          if (lane_obsvd == (lane+1)){ // if observed car is on the right side
-            if (space < space_on_right) {space_on_right = space;}
-            right_is_free = false;
-          }
-
-          // cout << "\nleft_is_free: " << left_is_free
-          //       << " right_is_free: " << right_is_free << endl;
+          cout << "\nleft_is_free: " << left_is_free
+                << " right_is_free: " << right_is_free << endl;
 
           if ((lane==0) && right_is_free)
           {
@@ -129,14 +122,14 @@ int Vehicle::next_lane(vector<vector<double>> sensor_fusion, int current_lane, d
               //         " right: " << space_on_right << endl;
               if (space_on_right == space_on_left)
               {
-                lane = 2;
+                lane += 1;
               } else {
-                lane = 0;
+                lane -= 1;
               }
             } else if (left_is_free) { 
-              lane = 0;
+              lane -= 1;
             } else if(right_is_free) {
-              lane = 2;
+              lane += 1;
             }
           }
           else if ((lane==2) && left_is_free)
@@ -144,18 +137,57 @@ int Vehicle::next_lane(vector<vector<double>> sensor_fusion, int current_lane, d
               lane = 1;
           }
 
-        // cout << "changing to lane: " << lane << endl;
-        // if (other_car_id != -1){
-        //   cout << "other car: " << other_car_dist << " ,lane: " << other_car_lane << endl;
-        // }
+        cout << "changing to lane: " << lane << endl;
+        if (other_car_id != -1){
+          cout << "other car: " << other_car_dist << " ,lane: " << other_car_lane << endl;
+        }
 
         }
       }
-    }
+    } // end of search through sensor fussion
+
+
+
     if (lane>2)
     {
       lane = 2;
     }
+
+
+
+    // if (car_ahead) // or too close
+    // {
+    //   if ((lane==0) && right_is_free)
+    //       {
+    //           lane = 1;
+    //       }
+    //       else if (lane==1)
+    //       {
+    //         if (left_is_free && right_is_free)
+    //         {
+    //           // cout << "spaces >> left: " << space_on_left << 
+    //           //         " right: " << space_on_right << endl;
+    //           if (space_on_right == space_on_left)
+    //           {
+    //             lane += 1;
+    //           } else {
+    //             lane -= 1;
+    //           }
+    //         } else if (left_is_free) { 
+    //           lane -= 1;
+    //         } else if(right_is_free) {
+    //           lane += 1;
+    //         }
+    //       }
+    //       else if ((lane==2) && left_is_free)
+    //       {
+    //           lane = 1;
+    //       }
+    // }
+    // else
+    // {
+    //   lane = current_lane;
+    // }
 
 
     // to prevent instantaneous lane change
