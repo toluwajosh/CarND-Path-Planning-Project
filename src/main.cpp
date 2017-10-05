@@ -10,6 +10,7 @@
 #include "json.hpp"
 #include "spline.h"
 #include "Vehicle.h"
+#include "PID.h"
 
 using namespace std;
 
@@ -170,9 +171,14 @@ double ref_vel = 0.0; //mph
 int main() {
   uWS::Hub h;
 
+  double speed_limit = 49.5;
   // create vehicle class
   Vehicle ego_vehicle;
-  ego_vehicle.start(1, 49.5);
+  ego_vehicle.start(1, speed_limit);
+
+  // velocity controller
+  PID vel_control;
+  vel_control.Init(0.005, 0.0, 0.0);
 
   // Load up map values for waypoint's x,y,s and d normalized normal vectors
   vector<double> map_waypoints_x;
@@ -209,7 +215,8 @@ int main() {
   }
 
 
-  h.onMessage([&map_waypoints_x,&map_waypoints_y,&map_waypoints_s, &ego_vehicle,
+  h.onMessage([&speed_limit, &map_waypoints_x,&map_waypoints_y,&map_waypoints_s, &ego_vehicle, 
+                &vel_control,
                 &map_waypoints_dx,&map_waypoints_dy](uWS::WebSocket<uWS::SERVER> ws, 
                 char *data, size_t length, uWS::OpCode opCode) 
   {
@@ -262,20 +269,37 @@ int main() {
             
             lane = 1;
 
-            if (ego_vehicle.car_ahead && (ref_vel > ego_vehicle.other_car_vel))
-            {
-              // keeping lane
-              ref_vel += 0.0;
-            }
-
             if (ego_vehicle.too_close)
             {
-              ref_vel -= 0.224;
+              // keeping lane
+              speed_limit = ego_vehicle.other_car_vel;
+            } else {
+              speed_limit = 49.5;
             }
-            else if( not ego_vehicle.car_ahead && (ref_vel < 49.5))
-            {
-              ref_vel += 0.224;
-            }
+
+            // if (ego_vehicle.too_close)
+            // {
+            //   ref_vel -= 0.224;
+            // }
+            // else if( not ego_vehicle.car_ahead && (ref_vel < 49.5))
+            // if(ref_vel < speed_limit)
+            // {
+            //   // ref_vel += 0.224;
+            //   double vel_error = ref_vel - speed_limit;
+            //   vel_control.UpdateError(vel_error);
+            //   double new_vel = vel_control.TotalError();
+            //   cout << "\nnew velocity: " << new_vel << endl;
+            //   cout << "other car velocity: " << ego_vehicle.other_car_vel << endl;
+            //   ref_vel += new_vel;
+            // }
+
+            // ref_vel += 0.224;
+            double vel_error = ref_vel - speed_limit;
+            vel_control.UpdateError(vel_error);
+            double new_vel = vel_control.TotalError();
+            cout << "\nnew velocity: " << new_vel << endl;
+            cout << "other car velocity: " << ego_vehicle.other_car_vel << endl;
+            ref_vel += new_vel;
 
 
 						/////////////////////////////////////////////////////////////////////////////////////////

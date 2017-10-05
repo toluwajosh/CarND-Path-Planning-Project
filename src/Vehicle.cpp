@@ -114,8 +114,8 @@ int Vehicle::next_lane(vector<vector<double>> sensor_fusion, int current_lane, d
             right_is_free = false;
           }
 
-          cout << "\nleft_is_free: " << left_is_free
-                << " right_is_free: " << right_is_free << endl;
+          // cout << "\nleft_is_free: " << left_is_free
+          //       << " right_is_free: " << right_is_free << endl;
 
           if ((lane==0) && right_is_free)
           {
@@ -144,10 +144,10 @@ int Vehicle::next_lane(vector<vector<double>> sensor_fusion, int current_lane, d
               lane = 1;
           }
 
-        cout << "changing to lane: " << lane << endl;
-        if (other_car_id != -1){
-          cout << "other car: " << other_car_dist << " ,lane: " << other_car_lane << endl;
-        }
+        // cout << "changing to lane: " << lane << endl;
+        // if (other_car_id != -1){
+        //   cout << "other car: " << other_car_dist << " ,lane: " << other_car_lane << endl;
+        // }
 
         }
       }
