@@ -9,8 +9,9 @@ using namespace std;
 
 class Vehicle
 {
+  int patience  = 0;
+
   int lane = 1;
-  int patience  = 6;
   double speed_limit = 49.5;
 
 
@@ -28,6 +29,9 @@ public:
   ~Vehicle();
 
   bool too_close = false;
+  bool car_ahead = false;
+
+  double other_car_vel = 0.0;
 
   // start car
   void start(int lane, double speed_limit);

@@ -27,12 +27,13 @@ int Vehicle::next_lane(vector<vector<double>> sensor_fusion, int current_lane, d
 
   // current run properties
   double keep_lane_speed = 49.5;
-  bool car_ahead = false;
+  
 
-
+  car_ahead = false;
   too_close = false;
-  // left_is_free = true;
-  // right_is_free = true;
+
+  left_is_free = true;
+  right_is_free = true;
 
   space_on_left = 10000.0;
   space_on_right = 10000.0;
@@ -46,10 +47,6 @@ int Vehicle::next_lane(vector<vector<double>> sensor_fusion, int current_lane, d
     right_is_free = false;
   }
 
-  // if (prev_size > 0)
-  // {
-  //   car_s = end_path_s;
-  // }
 
     ///////////////////////////////////////////////////////////
     // check through the data (cars) from sensor fussion output
@@ -78,6 +75,7 @@ int Vehicle::next_lane(vector<vector<double>> sensor_fusion, int current_lane, d
         other_car_d = check_car_d;
         other_car_lane = other_car_d/4;
         other_car_id = i;
+        other_car_vel = check_speed;
       }
 
       
@@ -86,6 +84,10 @@ int Vehicle::next_lane(vector<vector<double>> sensor_fusion, int current_lane, d
       { 
         // speed of the car in my lane
         keep_lane_speed = check_speed;
+
+        if ((check_car_s > car_s) && ((check_car_s-car_s)<(safety_space + 30))){
+          car_ahead = true;
+        }
         
         // check s values greater than mine and s gap
         if ((check_car_s > car_s) && ((check_car_s-car_s)<safety_space))
@@ -125,7 +127,7 @@ int Vehicle::next_lane(vector<vector<double>> sensor_fusion, int current_lane, d
             {
               // cout << "spaces >> left: " << space_on_left << 
               //         " right: " << space_on_right << endl;
-              if (space_on_right > space_on_left)
+              if (space_on_right == space_on_left)
               {
                 lane = 2;
               } else {
@@ -153,6 +155,17 @@ int Vehicle::next_lane(vector<vector<double>> sensor_fusion, int current_lane, d
     if (lane>2)
     {
       lane = 2;
+    }
+
+
+    // to prevent instantaneous lane change
+    if (too_close){
+      patience ++;
+    }
+
+    if (patience > 12){
+      lane = current_lane;
+      patience = 0;
     }
     // end of checking cars around ego-car
     ///////////////////////////////////////////////////////////////
