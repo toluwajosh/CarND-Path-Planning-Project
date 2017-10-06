@@ -26,7 +26,6 @@ int Vehicle::next_lane(vector<vector<double>> sensor_fusion, int current_lane, d
   int other_car_id = -1;
 
 
-  car_ahead = false;
   too_close = false;
 
   left_is_free = true;
@@ -76,9 +75,11 @@ int Vehicle::next_lane(vector<vector<double>> sensor_fusion, int current_lane, d
       if ((car_dist > 0) && (car_dist < 30))
       {
         if (lane_obsvd == (lane-1)){ // if an observed car is on the left side
+          //   if (space < space_on_left) {space_on_left = space;}
             left_is_free = false;
           }
           if (lane_obsvd == (lane+1)){ // if an observed car is on the right side
+            //   if (space < space_on_right) {space_on_right = space;}
             right_is_free = false;
           }
       } 
@@ -100,16 +101,14 @@ int Vehicle::next_lane(vector<vector<double>> sensor_fusion, int current_lane, d
         other_car_vel = check_speed;
       }
 
-
       
       // if observed car is in my lane:
       if ((d<2+4*lane+2) && d > (2+4*lane-2))
       { 
-
-        // of an observed car is ahead
-        if ((check_car_s > car_s) && ((check_car_s-car_s)<(safety_space + 30))){
-          car_ahead = true;
-
+        
+        // if observed car is too close
+        if ((check_car_s > car_s) && ((check_car_s-car_s)<safety_space))
+        {
           if (lane_obsvd == (lane-1)){ // if an observed car is on the left side
             if (space < space_on_left) {space_on_left = space;}
             left_is_free = false;
@@ -118,57 +117,9 @@ int Vehicle::next_lane(vector<vector<double>> sensor_fusion, int current_lane, d
             if (space < space_on_right) {space_on_right = space;}
             right_is_free = false;
           }
-        }
-        
-        // if observed car is too close
-        if ((check_car_s > car_s) && ((check_car_s-car_s)<safety_space))
-        {
           
-          // Do some logic here, lower reference velocity so we dont crash into the car infront of us,
-          // could also flag to try to change lanes.
-          // ref_vel = 29.5; //mph
           too_close = true;
-
-
-          // cout << "\nleft_is_free: " << left_is_free
-          //       << " right_is_free: " << right_is_free << endl;
-
-
-        //   ///
-
-        //   if ((lane==0) && right_is_free)
-        //   {
-        //       lane = 1;
-        //   }
-        //   else if (lane==1)
-        //   {
-        //     if (left_is_free && right_is_free)
-        //     {
-        //       // cout << "spaces >> left: " << space_on_left << 
-        //       //         " right: " << space_on_right << endl;
-        //       if (space_on_right == space_on_left)
-        //       {
-        //         lane += 1;
-        //       } else {
-        //         lane -= 1;
-        //       }
-        //     } else if (left_is_free) { 
-        //       lane -= 1;
-        //     } else if(right_is_free) {
-        //       lane += 1;
-        //     }
-        //   }
-        //   else if ((lane==2) && left_is_free)
-        //   {
-        //       lane = 1;
-        //   }
-
-        // cout << "changing to lane: " << lane << endl;
-        // if (other_car_id != -1){
-        //   cout << "other car: " << other_car_dist << " ,lane: " << other_car_lane << endl;
-        // }
-
-        // ///
+          cout << "space: " << space << endl;
 
         }
       }
@@ -177,8 +128,9 @@ int Vehicle::next_lane(vector<vector<double>> sensor_fusion, int current_lane, d
 
     if (too_close) // car_ahead or too close
     {
-      cout << "\nleft_is_free: " << left_is_free
-          << " right_is_free: " << right_is_free << endl;
+      cout << "\nleft_is_free: " << left_is_free << ", " << space_on_left 
+          << " right_is_free: " << right_is_free << ", " << space_on_right
+          << endl;
       if ((lane==0) && right_is_free)
           {
               lane = 1;
