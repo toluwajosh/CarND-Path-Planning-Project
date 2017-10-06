@@ -68,7 +68,30 @@ int Vehicle::next_lane(vector<vector<double>> sensor_fusion, int current_lane, d
       double space = check_car_s - end_path_s;
 
       // want to track the nearest car to the ego car
-      double car_dist = fabs(check_car_s - car_s);
+      // double car_dist = fabs(check_car_s - car_s);
+      double car_dist = check_car_s - car_s;
+
+      // check cars within dangerous range
+      // if car is in front
+      if ((car_dist > 0) && (car_dist < 30))
+      {
+        if (lane_obsvd == (lane-1)){ // if an observed car is on the left side
+            left_is_free = false;
+          }
+          if (lane_obsvd == (lane+1)){ // if an observed car is on the right side
+            right_is_free = false;
+          }
+      } 
+      else if ((car_dist < 0) && (car_dist > -20)) // if car is at the back
+      {
+        if (lane_obsvd == (lane-1)){ // if an observed car is on the left side
+            left_is_free = false;
+          }
+          if (lane_obsvd == (lane+1)){ // if an observed car is on the right side
+            right_is_free = false;
+          }
+      }
+
       if (car_dist < other_car_dist) {
         other_car_dist = car_dist;
         other_car_d = check_car_d;
@@ -107,10 +130,56 @@ int Vehicle::next_lane(vector<vector<double>> sensor_fusion, int current_lane, d
           too_close = true;
 
 
-          cout << "\nleft_is_free: " << left_is_free
-                << " right_is_free: " << right_is_free << endl;
+          // cout << "\nleft_is_free: " << left_is_free
+          //       << " right_is_free: " << right_is_free << endl;
 
-          if ((lane==0) && right_is_free)
+
+        //   ///
+
+        //   if ((lane==0) && right_is_free)
+        //   {
+        //       lane = 1;
+        //   }
+        //   else if (lane==1)
+        //   {
+        //     if (left_is_free && right_is_free)
+        //     {
+        //       // cout << "spaces >> left: " << space_on_left << 
+        //       //         " right: " << space_on_right << endl;
+        //       if (space_on_right == space_on_left)
+        //       {
+        //         lane += 1;
+        //       } else {
+        //         lane -= 1;
+        //       }
+        //     } else if (left_is_free) { 
+        //       lane -= 1;
+        //     } else if(right_is_free) {
+        //       lane += 1;
+        //     }
+        //   }
+        //   else if ((lane==2) && left_is_free)
+        //   {
+        //       lane = 1;
+        //   }
+
+        // cout << "changing to lane: " << lane << endl;
+        // if (other_car_id != -1){
+        //   cout << "other car: " << other_car_dist << " ,lane: " << other_car_lane << endl;
+        // }
+
+        // ///
+
+        }
+      }
+    } // end of search through sensor fussion
+
+
+    if (too_close) // car_ahead or too close
+    {
+      cout << "\nleft_is_free: " << left_is_free
+          << " right_is_free: " << right_is_free << endl;
+      if ((lane==0) && right_is_free)
           {
               lane = 1;
           }
@@ -136,59 +205,16 @@ int Vehicle::next_lane(vector<vector<double>> sensor_fusion, int current_lane, d
           {
               lane = 1;
           }
-
-        cout << "changing to lane: " << lane << endl;
-        if (other_car_id != -1){
-          cout << "other car: " << other_car_dist << " ,lane: " << other_car_lane << endl;
-        }
-
-        }
-      }
-    } // end of search through sensor fussion
-
-
-
-    if (lane>2)
-    {
-      lane = 2;
     }
-
-
-
-    // if (car_ahead) // or too close
-    // {
-    //   if ((lane==0) && right_is_free)
-    //       {
-    //           lane = 1;
-    //       }
-    //       else if (lane==1)
-    //       {
-    //         if (left_is_free && right_is_free)
-    //         {
-    //           // cout << "spaces >> left: " << space_on_left << 
-    //           //         " right: " << space_on_right << endl;
-    //           if (space_on_right == space_on_left)
-    //           {
-    //             lane += 1;
-    //           } else {
-    //             lane -= 1;
-    //           }
-    //         } else if (left_is_free) { 
-    //           lane -= 1;
-    //         } else if(right_is_free) {
-    //           lane += 1;
-    //         }
-    //       }
-    //       else if ((lane==2) && left_is_free)
-    //       {
-    //           lane = 1;
-    //       }
-    // }
     // else
     // {
     //   lane = current_lane;
     // }
 
+    if (lane>2)
+    {
+      lane = 2;
+    }
 
     // to prevent instantaneous lane change
     if (too_close){

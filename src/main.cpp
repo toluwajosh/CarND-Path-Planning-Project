@@ -266,15 +266,30 @@ int main() {
 
             // get new lane to go to
             lane = ego_vehicle.next_lane(sensor_fusion, lane, car_s, end_path_s, prev_size);
+
+            if (ego_vehicle.too_close){
+              cout << "change to lane: " << lane << endl;
+            }
             
             // lane = 1; // for debug
 
+            /////////////////////////////////////////////
+            // target speed control
+            // if (ego_vehicle.too_close)
+            // {
+            //   // keeping lane
+            //   speed_limit = ego_vehicle.other_car_vel;
+            // } else {
+            //   speed_limit = 49.5;
+            // }
+
             if (ego_vehicle.too_close)
             {
-              // keeping lane
-              speed_limit = ego_vehicle.other_car_vel;
-            } else {
-              speed_limit = 49.5;
+              ref_vel -= 0.224;
+            }
+            else if(ref_vel < 49.5)
+            {
+              ref_vel += 0.224;
             }
 
 
