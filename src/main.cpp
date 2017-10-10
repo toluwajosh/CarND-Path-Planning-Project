@@ -274,30 +274,28 @@ int main() {
             // lane = 1; // for debug
 
             /////////////////////////////////////////////
-            // target speed control
-            // if (ego_vehicle.too_close)
-            // {
-            //   // keeping lane
-            //   speed_limit = ego_vehicle.other_car_vel;
-            // } else {
-            //   speed_limit = 49.5;
-            // }
-
-            // double vel_error = ref_vel - speed_limit;
-            // vel_control.UpdateError(vel_error);
-            // double new_vel = vel_control.TotalError();
-            // // cout << "\nnew velocity: " << new_vel << endl;
-            // // cout << "other car velocity: " << ego_vehicle.other_car_vel << endl;
-            // ref_vel += new_vel;
-            
+            // target velocity control
             if (ego_vehicle.too_close)
             {
-              ref_vel -= 0.224;
+              // keeping lane
+              speed_limit = ego_vehicle.other_car_vel;
+            } else {
+              speed_limit = 49.5;
             }
-            else if(ref_vel < 49.5)
-            {
-              ref_vel += 0.224;
-            }
+
+            double vel_error = ref_vel - speed_limit;
+            vel_control.UpdateError(vel_error);
+            double new_vel = vel_control.TotalError();
+            ref_vel += new_vel;
+            
+            // if (ego_vehicle.too_close)
+            // {
+            //   ref_vel -= 0.224;
+            // }
+            // else if(ref_vel < 49.5)
+            // {
+            //   ref_vel += 0.224;
+            // }
 
 
 						/////////////////////////////////////////////////////////////////////////////////////////
@@ -347,7 +345,7 @@ int main() {
               ptsy.push_back(ref_y);
             }
 
-            //In Frenet add evenly 30m spaced points ahead of the starting reference
+            //In Frenet add spaced points ahead of the starting reference
             vector<double> next_wp0 = getXY(car_s+30, (2+4*lane), map_waypoints_s, map_waypoints_x, map_waypoints_y);
             vector<double> next_wp1 = getXY(car_s+50, (2+4*lane), map_waypoints_s, map_waypoints_x, map_waypoints_y);
             vector<double> next_wp2 = getXY(car_s+70, (2+4*lane), map_waypoints_s, map_waypoints_x, map_waypoints_y);
@@ -379,7 +377,7 @@ int main() {
             tk::spline s;
 
             //set (x,y) points to the spline
-            s.set_points(ptsx, ptsy); // the 5 anchor points
+            s.set_points(ptsx, ptsy); // the anchor points/waypoints
 
             // define the actual (x,y) points we will use for the planner
             vector<double> next_x_vals;
