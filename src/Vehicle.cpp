@@ -74,7 +74,7 @@ int Vehicle::next_lane(vector<vector<double>> sensor_fusion, int current_lane, d
             right_is_free = false;
           }
       } 
-      // if car is at the back, within 30m
+      // if car is at the back, within 20m
       else if ((car_dist < 0) && (car_dist > -20))
       {
         if (lane_obsvd == (lane-1)){ // if an observed car is on the left side
@@ -110,9 +110,9 @@ int Vehicle::next_lane(vector<vector<double>> sensor_fusion, int current_lane, d
     // if car is too close
     if (too_close) 
     {
-      cout << "\nleft_side: " << left_is_free << ", " << space_on_left 
-          << " right_side: " << right_is_free << ", " << space_on_right
-          << endl;
+      // cout << "\nleft_side: " << left_is_free << ", " << space_on_left 
+      //     << " right_side: " << right_is_free << ", " << space_on_right
+      //     << endl;
       if ((lane==0) && right_is_free)
       {
           lane = 1;
@@ -147,7 +147,6 @@ int Vehicle::next_lane(vector<vector<double>> sensor_fusion, int current_lane, d
     // to prevent instantaneous lane change by applying patience
     if (lane != current_lane){
       patience ++;
-      cout << "applying patience: " << patience << endl;
     } else {
       patience = 0;
     }

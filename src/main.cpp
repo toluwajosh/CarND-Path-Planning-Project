@@ -263,15 +263,13 @@ int main() {
               car_s = end_path_s;
             }
 
-
             // get new lane to go to
             lane = ego_vehicle.next_lane(sensor_fusion, lane, car_s, end_path_s, prev_size);
 
             if (ego_vehicle.too_close){
-              cout << "change to lane: " << lane << endl;
+              // cout << "change to lane: " << lane << endl;
             }
             
-            // lane = 1; // for debug
 
             /////////////////////////////////////////////
             // target velocity control
@@ -399,7 +397,7 @@ int main() {
             double x_add_on = 0; //since we are starting at the origin
 
             // fill up the rest of our path planner after filling it with previous points, here we will always output 50 points
-            for (int i = 1; i <= 60-previous_path_x.size(); i++)
+            for (int i = 1; i <= 50-previous_path_x.size(); i++)
             {
               double N = (target_dist/(0.02*ref_vel/2.24)); // 2.24: conversion to m/s
               double x_point = x_add_on+(target_x)/N;
@@ -421,8 +419,7 @@ int main() {
               next_y_vals.push_back(y_point);
             }
 
-						// END TODO //
-
+            /////////////////////////////////////////////////
             json msgJson;
 						// return the processed (x,y) points
           	msgJson["next_x"] = next_x_vals;
