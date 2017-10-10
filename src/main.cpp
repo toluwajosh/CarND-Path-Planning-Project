@@ -283,6 +283,13 @@ int main() {
             //   speed_limit = 49.5;
             // }
 
+            // double vel_error = ref_vel - speed_limit;
+            // vel_control.UpdateError(vel_error);
+            // double new_vel = vel_control.TotalError();
+            // // cout << "\nnew velocity: " << new_vel << endl;
+            // // cout << "other car velocity: " << ego_vehicle.other_car_vel << endl;
+            // ref_vel += new_vel;
+            
             if (ego_vehicle.too_close)
             {
               ref_vel -= 0.224;
@@ -293,12 +300,6 @@ int main() {
             }
 
 
-            double vel_error = ref_vel - speed_limit;
-            vel_control.UpdateError(vel_error);
-            double new_vel = vel_control.TotalError();
-            // cout << "\nnew velocity: " << new_vel << endl;
-            // cout << "other car velocity: " << ego_vehicle.other_car_vel << endl;
-            ref_vel += new_vel;
 
 
 						/////////////////////////////////////////////////////////////////////////////////////////
