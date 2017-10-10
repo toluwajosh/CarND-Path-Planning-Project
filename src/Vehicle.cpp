@@ -62,7 +62,7 @@ int Vehicle::next_lane(vector<vector<double>> sensor_fusion, int current_lane, d
       double car_dist = check_car_s - car_s;
 
       // check cars within dangerous range
-      // if car is in front
+      // if car is in front, within 30m
       if ((car_dist > 0) && (car_dist < 30))
       {
         if (lane_obsvd == (lane-1)){ // if an observed car is on the left side
@@ -74,7 +74,7 @@ int Vehicle::next_lane(vector<vector<double>> sensor_fusion, int current_lane, d
             right_is_free = false;
           }
       } 
-      // if car is at the back
+      // if car is at the back, within 30m
       else if ((car_dist < 0) && (car_dist > -20))
       {
         if (lane_obsvd == (lane-1)){ // if an observed car is on the left side
@@ -102,14 +102,13 @@ int Vehicle::next_lane(vector<vector<double>> sensor_fusion, int current_lane, d
             // if (space < space_on_right) {space_on_right = space;}
             right_is_free = false;
           }
-          
-          cout << "space: " << car_dist << endl;
         }
       }
     } // end of search through sensor fussion
 
 
-    if (too_close) // car_ahead or too close
+    // if car is too close
+    if (too_close) 
     {
       cout << "\nleft_side: " << left_is_free << ", " << space_on_left 
           << " right_side: " << right_is_free << ", " << space_on_right
@@ -122,8 +121,6 @@ int Vehicle::next_lane(vector<vector<double>> sensor_fusion, int current_lane, d
       {
         if (left_is_free && right_is_free)
         {
-          // cout << "spaces >> left: " << space_on_left << 
-          //         " right: " << space_on_right << endl;
           if (space_on_right > space_on_left)
           {
             lane += 1;
@@ -141,26 +138,23 @@ int Vehicle::next_lane(vector<vector<double>> sensor_fusion, int current_lane, d
           lane = 1;
       }
     }
-    // else
-    // {
-    //   lane = current_lane;
-    // }
 
     if (lane>2)
     {
       lane = 2;
     }
 
-    // to prevent instantaneous lane change
-    if (too_close){
+    // to prevent instantaneous lane change by applying patience
+    if (lane != current_lane){
       patience ++;
-    }
-
-    if (patience > 12){
-      lane = current_lane;
+      cout << "applying patience: " << patience << endl;
+    } else {
       patience = 0;
     }
-    // end of checking cars around ego-car
-    ///////////////////////////////////////////////////////////////
+    if (patience < 12){
+      lane = current_lane;
+    } else {
+      patience = 0;
+    }
     return lane;
 }
