@@ -157,3 +157,8 @@ int Vehicle::next_lane(vector<vector<double>> sensor_fusion, int current_lane, d
     }
     return lane;
 }
+
+// handle prediction for other vehicles around the ego-vehicle
+vector<vector<double>> predict_others(vector<vector<double>> sensor_fusion, int current_lane){
+  return vector<vector<double>> sensor_fusion
+}
