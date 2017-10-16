@@ -31,6 +31,8 @@ public:
   bool too_close = false;
   bool car_ahead = false;
 
+  // typedef unsigned int size_t; // type definition for a variable to store the size of an array
+
   double other_car_vel = 0.0;
 
   // start car
