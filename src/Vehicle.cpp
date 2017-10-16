@@ -160,5 +160,10 @@ int Vehicle::next_lane(vector<vector<double>> sensor_fusion, int current_lane, d
 
 // handle prediction for other vehicles around the ego-vehicle
 vector<vector<double>> predict_others(vector<vector<double>> sensor_fusion, int current_lane){
-  return vector<vector<double>> sensor_fusion
+  return sensor_fusion
+}
+
+vector<double> change_state_costs(int current_lane, vector<vector<double>> predictions){
+  vector<double> costs;
+  return costs
 }

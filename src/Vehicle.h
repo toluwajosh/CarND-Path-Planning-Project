@@ -38,6 +38,7 @@ public:
   int next_lane(vector<vector<double>> sensor_fusion, int current_lane, double car_s, double end_path_s, int prev_size);
 
   vector<vector<double>> predict_others(vector<vector<double>> sensor_fusion, int current_lane);
+  vector<double> change_state_costs(int current_lane, vector<vector<double>> predictions);
   
 };
 
